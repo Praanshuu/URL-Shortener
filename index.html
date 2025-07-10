@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkly - URL Shortener</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Linkly<sup>®</sup></div>
+            <div class="auth-buttons">
+                <button class="btn btn-login">Login <img src="assets/login.png" class="login-icon" alt=""> </button>
+                <button class="btn btn-register">Register Now</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="hero">
+                <h1 class="headline glow-text"> Shorten Your Loooong Links :) </h1>
+                <p class="description">
+                    Linkly is an efficient and easy-to-use URL shortening service that streamlines your
+                    online experience.
+                </p>
+                <div class="url-input-container">
+                    <div class="input-wrapper">
+                        <div class="input-container">
+                            <input type="text" class="link-input" placeholder="Enter the link here">
+                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                                </path>
+                            </svg>
+                            <button class="btn-shorten">Shorten Now!</button>
+                        </div>
+                    </div>
+
+                    <div class="toggle-container">
+                        <label class="toggle">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="toggle-label">Auto Paste from Clipboard</span>
+                    </div>
+                </div>
+
+                <div class="shortened-url">
+                    <p>Your Shortened URL: <span id="shortened-link"></span></p>
+                </div>
+
+                <div class="notification">
+                    You can create <span style="color: #e861a4; font-weight: bold;"> 05</span> more links.
+                    <a href="#" class="register-link">Register Now</a> to enjoy Unlimited usage
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-question-circle" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                        <path
+                            d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286m1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94" />
+                    </svg>
+                </div>
+            </div>
+            <div class="links-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Short Link</th>
+                            <th>Original Link</th>
+                            <th>QR Code</th>
+                            <th>Clicks</th>
+                            <th>Status</th>
+                            <th>Date <span class="sort-icon">↓</span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-table-body">
+                        <!-- Table content will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
