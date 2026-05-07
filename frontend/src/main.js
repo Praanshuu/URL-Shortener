@@ -10,14 +10,20 @@ if (!publishableKey) {
 
 // ─── Handle Short Link Redirection ──────────────────────────────────────────
 const path = window.location.pathname;
-if (path.startsWith("/r/")) {
-  const shortId = path.split("/r/")[1];
-  if (shortId) {
+// If the path is not just "/", and doesn't look like a file (no dot)
+if (path.length > 1 && !path.includes(".") && !path.startsWith("/api/")) {
+  // Support both /r/shortId and just /shortId
+  const shortId = path.startsWith("/r/") ? path.split("/r/")[1] : path.slice(1);
+  
+  if (shortId && shortId.length >= 6) { // Most nanoids are 8 chars, let's be safe
     const redirectUrl = API_BASE_URL.startsWith("http") 
       ? `${API_BASE_URL}/url/${shortId}`
       : `${window.location.origin}${API_BASE_URL}/url/${shortId}`;
+    
+    // Perform the redirect immediately
     window.location.href = redirectUrl;
-    // Stop execution while redirecting
+    // Prevent the rest of the app from flashing
+    document.body.innerHTML = '<div style="background:#0f172a; color:white; height:100vh; display:flex; align-items:center; justify-content:center; font-family:sans-serif;">Redirecting...</div>';
     await new Promise(() => {}); 
   }
 }
@@ -154,8 +160,8 @@ async function shortenLink() {
 
     if (!res.ok) throw new Error(data.error || "Server error");
 
-    // Always use the current domain + /r/ prefix for the result display
-    const displayUrl = `${window.location.origin}/r/${data.short_id}`;
+    // Always use the current domain for the result display (clean format: domain.com/ID)
+    const displayUrl = `${window.location.origin}/${data.short_id}`;
     shortenedLink.innerHTML = `<a href="${displayUrl}" target="_blank">${displayUrl}</a>`;
     shortenedUrlDisplay.classList.remove("hidden");
     linkInput.value = "";
@@ -203,8 +209,8 @@ function addRowToTable(link) {
     ? link.redirect_url.slice(0, 40) + "…"
     : link.redirect_url;
 
-  // Always construct the short URL from the current domain so it's never localhost
-  const shortUrl = `${window.location.origin}/r/${link.short_id}`;
+  // Always construct the short URL from the current domain (clean format: domain.com/ID)
+  const shortUrl = `${window.location.origin}/${link.short_id}`;
 
   row.innerHTML = `
     <td>
