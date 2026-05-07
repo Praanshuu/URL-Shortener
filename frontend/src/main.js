@@ -8,6 +8,20 @@ if (!publishableKey) {
   throw new Error("Add VITE_CLERK_PUBLISHABLE_KEY to your .env file");
 }
 
+// ─── Handle Short Link Redirection ──────────────────────────────────────────
+const path = window.location.pathname;
+if (path.startsWith("/r/")) {
+  const shortId = path.split("/r/")[1];
+  if (shortId) {
+    const redirectUrl = API_BASE_URL.startsWith("http") 
+      ? `${API_BASE_URL}/url/${shortId}`
+      : `${window.location.origin}${API_BASE_URL}/url/${shortId}`;
+    window.location.href = redirectUrl;
+    // Stop execution while redirecting
+    await new Promise(() => {}); 
+  }
+}
+
 // Load @clerk/ui bundle — required for mountSignIn / mountSignUp
 const clerkDomain = atob(publishableKey.split("_")[2]).slice(0, -1);
 await new Promise((resolve, reject) => {
