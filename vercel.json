@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/r/:shortId",
+      "destination": "/_/backend/url/:shortId"
+    }
+  ],
   "experimentalServices": {
     "frontend": {
       "entrypoint": "frontend",
