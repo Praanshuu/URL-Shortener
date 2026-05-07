@@ -1,54 +1,47 @@
 const { nanoid } = require("nanoid");
-const URL = require("../models/Url");
+const { pool } = require("../database");
 
-const BASE_URL = "http://localhost:8001";  // 👈 Make sure this matches your backend
+const BASE_URL = process.env.BASE_URL || "http://localhost:8001";
 
 async function handleGenerateNewShortURL(req, res) {
-    try {
-        console.log("Request received:", req.body);
+  try {
+    const { url } = req.body;
+    if (!url) return res.status(400).json({ error: "url is required" });
+    try { new URL(url); } catch { return res.status(400).json({ error: "Invalid URL" }); }
 
-        const { Url, url } = req.body;
-        const redirectURL = Url || url;
+    const shortId = nanoid(8);
+    const shortUrl = `${BASE_URL}/url/${shortId}`;
+    const userId = req.auth.userId;
 
-        if (!redirectURL) {
-            return res.status(400).json({ error: "url is required" });
-        }
-
-        const shortId = nanoid(8);
-        const shortUrl = `${BASE_URL}/${shortId}`;  // 👈 Construct the full short URL
-
-        const newUrl = await URL.create({
-            shortId,
-            shortUrl,  // 👈 Store full short URL
-            redirectURL,
-            visitHistory: [],
-        });
-
-        console.log("New URL saved:", newUrl);
-
-        return res.json({ id: shortId, shortUrl });  // 👈 Return full URL to frontend
-    } catch (error) {
-        console.error("Error creating short URL:", error);
-        return res.status(500).json({ error: "Internal Server Error", details: error.message });
-    }
+    const result = await pool.query(
+      `INSERT INTO urls (short_id, redirect_url, short_url, user_id) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [shortId, url, shortUrl, userId]
+    );
+    return res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("❌ Error creating short URL:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 }
 
 async function handleGetAnalytics(req, res) {
-    try {
-        const { shortId } = req.params;
-        const entry = await URL.findOne({ shortId });
+  try {
+    const { shortId } = req.params;
+    const userId = req.auth.userId;
+    const urlRow = await pool.query(
+      `SELECT id FROM urls WHERE short_id = $1 AND user_id = $2`,
+      [shortId, userId]
+    );
+    if (!urlRow.rows.length) return res.status(404).json({ error: "Not found" });
 
-        if (!entry) {
-            return res.status(404).json({ error: "Short URL not found" });
-        }
-
-        res.json({ totalClicks: entry.visitHistory.length });
-    } catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
-    }
+    const visits = await pool.query(
+      `SELECT COUNT(*) AS total_clicks FROM visits WHERE url_id = $1`,
+      [urlRow.rows[0].id]
+    );
+    return res.json({ totalClicks: parseInt(visits.rows[0].total_clicks, 10) });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 }
 
-module.exports = {
-    handleGenerateNewShortURL,
-    handleGetAnalytics, // ✅ Add this export
-};
+module.exports = { handleGenerateNewShortURL, handleGetAnalytics };

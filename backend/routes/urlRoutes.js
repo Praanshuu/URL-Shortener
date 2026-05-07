@@ -1,55 +1,76 @@
 const express = require("express");
-const URL = require("../models/Url");
+const { verifyToken } = require("@clerk/backend");
+const { pool } = require("../database");
 const { handleGenerateNewShortURL, handleGetAnalytics } = require("../controllers/url");
-
 
 const router = express.Router();
 
-// 🔹 POST: Create a short URL
-router.post("/", handleGenerateNewShortURL);
+// ── Clerk auth middleware ─────────────────────────────────────────────────
+async function requireAuth(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.replace("Bearer ", "");
+    if (!token) return res.status(401).json({ error: "Unauthorized: no token" });
 
-// 🔹 GET: Fetch analytics for a short URL
-router.get("/analytics/:shortId", handleGetAnalytics);
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
 
-// 🔹 ✅ NEW: Fetch all shortened URLs (For frontend table)
-router.get("/all", async (req, res) => {
-    try {
-        console.log("🔍 Fetching all short URLs...");
+    req.auth = { userId: payload.sub };
+    next();
+  } catch (err) {
+    console.error("❌ Auth error:", err.message);
+    return res.status(401).json({ error: "Invalid or expired token" });
+  }
+}
 
-        const urls = await URL.find({});
 
-        if (!urls || urls.length === 0) {
-            console.error("❌ No short URLs found.");
-            return res.status(404).json({ error: "No short URLs found" });
-        }
+// ── POST /url — shorten a URL (auth required) ──────────────────────────────
+router.post("/", requireAuth, handleGenerateNewShortURL);
 
-        console.log("✅ Found URLs:", urls.length);
-        res.json(urls);
-    } catch (error) {
-        console.error("❌ Error fetching links:", error);
-        res.status(500).json({ error: "Internal Server Error", details: error.message });
-    }
+// ── GET /url/all — fetch current user's URLs (auth required) ──────────────
+router.get("/all", requireAuth, async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+    const result = await pool.query(
+      `SELECT u.*, COUNT(v.id)::int AS click_count
+       FROM urls u
+       LEFT JOIN visits v ON v.url_id = u.id
+       WHERE u.user_id = $1
+       GROUP BY u.id
+       ORDER BY u.created_at DESC`,
+      [userId]
+    );
+    return res.json(result.rows);
+  } catch (error) {
+    console.error("❌ Fetch all error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-// 🔹 GET: Redirect to original URL
+// ── GET /url/analytics/:shortId (auth required) ───────────────────────────
+router.get("/analytics/:shortId", requireAuth, handleGetAnalytics);
+
+// ── GET /url/:shortId — redirect (public, no auth) ────────────────────────
 router.get("/:shortId", async (req, res) => {
-    const { shortId } = req.params;
+  const { shortId } = req.params;
+  try {
+    const urlRow = await pool.query(
+      `SELECT id, redirect_url FROM urls WHERE short_id = $1`,
+      [shortId]
+    );
+    if (!urlRow.rows.length) return res.status(404).json({ error: "URL not found" });
 
-    try {
-        const entry = await URL.findOne({ shortId });
+    const { id, redirect_url } = urlRow.rows[0];
 
-        if (!entry) {
-            return res.status(404).json({ error: "Short URL not found" });
-        }
+    // Record visit (fire-and-forget)
+    pool.query(`INSERT INTO visits (url_id) VALUES ($1)`, [id]).catch(console.error);
 
-        entry.visitHistory.push({ timestamp: Date.now() });
-        await entry.save();
-
-        res.redirect(entry.redirectURL);
-    } catch (error) {
-        res.status(500).json({ error: "Internal Server Error" });
-    }
+    return res.redirect(redirect_url);
+  } catch (error) {
+    console.error("❌ Redirect error:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 module.exports = router;
-

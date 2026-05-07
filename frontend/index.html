@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linkly - URL Shortener</title>
+    <meta name="description" content="Linkly is an efficient and easy-to-use URL shortening service. Shorten, track and manage your links." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="auth-overlay" class="auth-overlay hidden">
+        <div id="clerk-auth-container"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo">Linkly<sup>®</sup></div>
+            <div id="auth-buttons" class="auth-buttons">
+                <!-- Clerk injects here -->
+                <button id="btn-login" class="btn btn-login">Login</button>
+                <button id="btn-register" class="btn btn-register">Register Now</button>
+            </div>
+            <div id="user-button-container" class="hidden"></div>
+        </header>
+
+        <div class="main-content">
+            <div class="hero">
+                <h1 class="headline glow-text">Shorten Your Loooong Links :)</h1>
+                <p class="description">
+                    Linkly is an efficient and easy-to-use URL shortening service that streamlines your online experience.
+                </p>
+
+                <div class="url-input-container">
+                    <div class="input-wrapper">
+                        <div class="input-container">
+                            <input id="link-input" type="text" class="link-input" placeholder="Enter the link here" />
+                            <svg class="link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                                </path>
+                            </svg>
+                            <button id="btn-shorten" class="btn-shorten">Shorten Now!</button>
+                        </div>
+                    </div>
+
+                    <div class="toggle-container">
+                        <label class="toggle">
+                            <input id="auto-paste-toggle" type="checkbox" />
+                            <span class="slider"></span>
+                        </label>
+                        <span class="toggle-label">Auto Paste from Clipboard</span>
+                    </div>
+                </div>
+
+                <div id="shortened-url-display" class="shortened-url hidden">
+                    <p>Your Shortened URL: <span id="shortened-link"></span>
+                        <button id="copy-btn" class="copy-icon-btn" title="Copy to clipboard">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1z"/>
+                                <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0z"/>
+                            </svg>
+                        </button>
+                    </p>
+                </div>
+
+                <div id="guest-notification" class="notification">
+                    You can create <span style="color: #e861a4; font-weight: bold;"> 05</span> more links.
+                    <a href="#" id="register-link-notif" class="register-link">Register Now</a> to enjoy Unlimited usage
+                </div>
+            </div>
+
+            <div class="links-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Short Link</th>
+                            <th>Original Link</th>
+                            <th>Clicks</th>
+                            <th>Status</th>
+                            <th>Date <span class="sort-icon">↓</span></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="links-table-body">
+                        <tr id="empty-table-row">
+                            <td colspan="6" class="empty-state">
+                                <span id="empty-state-msg">Sign in to view your shortened links.</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>

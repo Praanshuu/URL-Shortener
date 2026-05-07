@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: linkly-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: BASE_URL
+        sync: false
+      - key: PORT
+        value: 8001

@@ -1,1 +1,19 @@
+# Root
 node_modules/
+.DS_Store
+*.log
+
+# Environment files - NEVER commit these
+backend/.env
+frontend/.env
+.env
+
+# Build outputs
+frontend/dist/
+frontend/dist-ssr/
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.sw?
